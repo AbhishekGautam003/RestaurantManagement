@@ -54,6 +54,7 @@ connectDB();
 
 // Health check endpoint  ← MOVE IT HERE
 app.get('/api/health', (req, res) => {
+  console.log('Health check hit!');
   res.status(200).json({ message: 'Server is running' });
 });
 
