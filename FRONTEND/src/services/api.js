@@ -42,12 +42,15 @@ export const authAPI = {
   getCurrentUser: () => api.get('/auth/me'),
 };
 
-// Menu APIs
 export const menuAPI = {
   getAll: () => api.get('/menu'),
   getById: (id) => api.get(`/menu/${id}`),
-  create: (data) => api.post('/menu', data),
-  update: (id, data) => api.put(`/menu/${id}`, data),
+  create: (data) => api.post('/menu', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  update: (id, data) => api.put(`/menu/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   delete: (id) => api.delete(`/menu/${id}`),
   getByCategory: (category) => api.get(`/menu/category/${category}`),
 };

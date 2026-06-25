@@ -9,6 +9,8 @@ import {
   updateMockMenuItem,
 } from '../utils/mockStore.js';
 
+import uploadFile from '../services/storage.service.js';
+
 // @desc    Get all menu items
 // @route   GET /api/menu
 // @access  Public
@@ -79,19 +81,24 @@ export const getMenuItemById = async (req, res) => {
 // @route   POST /api/menu
 // @access  Private/Admin
 export const createMenuItem = async (req, res) => {
+  
   try {
     if (mongoose.connection.readyState !== 1 || isMockUser(req.user)) {
       const item = createMockMenuItem(req.body);
       return res.status(201).json(item);
     }
 
+    if (req.file) {
+      const result = await uploadFile(req.file.buffer, req.file.originalname);
+      req.body.image = result.url;
+    }
     req.body.createdBy = req.user._id;
     const item = await MenuItem.create(req.body);
+
     res.status(201).json(item);
   } catch (error) {
-    console.log('Database error, creating mock item');
-    const mockItem = createMockMenuItem(req.body);
-    res.status(201).json(mockItem);
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 };
 

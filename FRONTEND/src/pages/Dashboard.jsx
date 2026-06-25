@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { TrendingUp, ShoppingCart, Users, Calendar, DollarSign } from 'lucide-react';
+import { TrendingUp, ShoppingCart, Users, Calendar, IndianRupee } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { dashboardAPI } from '../services/api';
 import { formatCurrency } from '../utils/helpers';
@@ -125,7 +125,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[
             {
-              icon: DollarSign,
+              icon: IndianRupee,
               label: 'Total Sales',
               value: formatCurrency(stats?.totalSales || 0),
               color: 'bg-green-100 dark:bg-green-900/30 text-green-600',

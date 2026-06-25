@@ -21,6 +21,9 @@ export default function MenuForm({ item, onClose, onSubmit }) {
   });
   const [loading, setLoading] = useState(false);
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+
   useEffect(() => {
     if (item) {
       setFormData({
@@ -32,6 +35,8 @@ export default function MenuForm({ item, onClose, onSubmit }) {
         image: item.image || '',
         isAvailable: item.isAvailable ?? true,
       });
+      
+    setImagePreview(item.image || ''); 
     } else {
       setFormData({
         name: '',
@@ -42,6 +47,7 @@ export default function MenuForm({ item, onClose, onSubmit }) {
         image: '',
         isAvailable: true,
       });
+      setImagePreview('');
     }
   }, [item]);
 
@@ -58,11 +64,25 @@ export default function MenuForm({ item, onClose, onSubmit }) {
     setLoading(true);
 
     try {
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('description', formData.description);
+      data.append('price', formData.price);
+      data.append('category', formData.category);
+      data.append('dietaryType', formData.dietaryType);
+      data.append('isAvailable', formData.isAvailable);
+
+      if (imageFile) {
+        data.append('image', imageFile);
+      } else if (formData.image) {
+        data.append('image', formData.image);
+      }
+
       if (item) {
-        await menuAPI.update(item._id, formData);
+        await menuAPI.update(item._id, data);
         toast.success('Menu item updated successfully');
       } else {
-        await menuAPI.create(formData);
+        await menuAPI.create(data);
         toast.success('Menu item created successfully');
       }
       onSubmit();
@@ -72,6 +92,7 @@ export default function MenuForm({ item, onClose, onSubmit }) {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-4">
@@ -90,7 +111,7 @@ export default function MenuForm({ item, onClose, onSubmit }) {
           </div>
 
           <form onSubmit={handleSubmit} className="max-h-[calc(100vh-8rem)] space-y-4 overflow-y-auto pr-1">
-          <div>
+            <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Name
             </label>
@@ -104,115 +125,128 @@ export default function MenuForm({ item, onClose, onSubmit }) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="3"
-              className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Price
+                Image
               </label>
               <input
-                type="number"
-                name="price"
-                value={formData.price}
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setImageFile(file);
+                    setImagePreview(URL.createObjectURL(file));
+                  }
+                }}
+                className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
+              />
+              {(imagePreview || formData.image) && (
+                <img
+                  src={imagePreview || formData.image}
+                  alt="Preview"
+                  className="mt-2 h-32 w-full rounded-lg object-cover"
+                />
+              )}
+            </div>
+
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
-                step="0.01"
-                required
+                rows="3"
                 className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
               />
             </div>
 
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  step="0.01"
+                  required
+                  className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Category
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Category
+                Food Type
               </label>
               <select
-                name="category"
-                value={formData.category}
+                name="dietaryType"
+                value={formData.dietaryType}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
               >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                {DIETARY_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
                   </option>
                 ))}
               </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Food Type
-            </label>
-            <select
-              name="dietaryType"
-              value={formData.dietaryType}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
-            >
-              {DIETARY_TYPES.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="isAvailable"
+                id="isAvailable"
+                checked={formData.isAvailable}
+                onChange={handleChange}
+                className="w-4 h-4 rounded"
+              />
+              <label htmlFor="isAvailable" className="text-sm text-gray-700 dark:text-gray-300">
+                Available
+              </label>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Image URL
-            </label>
-            <input
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="isAvailable"
-              id="isAvailable"
-              checked={formData.isAvailable}
-              onChange={handleChange}
-              className="w-4 h-4 rounded"
-            />
-            <label htmlFor="isAvailable" className="text-sm text-gray-700 dark:text-gray-300">
-              Available
-            </label>
-          </div>
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:shadow-lg disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save'}
-            </button>
-          </div>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:shadow-lg disabled:opacity-50"
+              >
+                {loading ? 'Saving...' : 'Save'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

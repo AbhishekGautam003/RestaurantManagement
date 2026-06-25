@@ -79,6 +79,9 @@ export const login = async (req, res) => {
           setTimeout(() => reject(new Error('DB timeout')), 5000)
         )
       ]);
+
+      console.log("DB USER:", user);
+
     } catch (dbError) {
       // DB connection failed or timed out, use mock users
       console.log('Database error, using mock users:', dbError.message);
