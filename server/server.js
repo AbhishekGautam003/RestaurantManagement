@@ -52,6 +52,11 @@ app.use((req, res, next) => {
 // Connect to database
 connectDB();
 
+// Health check endpoint  ← MOVE IT HERE
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ message: 'Server is running' });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
